@@ -32,7 +32,7 @@ global $jms_customer_manager_version;
 $jms_customer_manager_version = '1.0';
     
 //install database
-register_activation_hook( __FILE__, 'installJMSTencentVideoManager' );
+register_activation_hook( __FILE__, 'installJMSCustomerManager' );
 
 add_action( 'admin_menu', 'jmsCustomerAdminPage' );
 add_action('wp_ajax_jms_customer', 'jms_customer_ajax');
@@ -42,7 +42,7 @@ add_action('wp_ajax_nopriv_jms_customer', 'jms_customer_ajax');
 /**
  * Init database, current version 1.0
  */
-function installJMSTencentVideoManager() {
+function installJMSCustomerManager() {
     global $jms_customer_manager_version;
     global $wpdb;
     
