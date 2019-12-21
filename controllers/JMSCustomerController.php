@@ -39,8 +39,8 @@
         
         function addCustomer($name, $wechatID, $desc, $childInfo, $interest, $sellTier) {
             global $wpdb;
-            if(empty($name)) {
-                echo __('用户昵称不能为空', 'jms-customer-manager');
+            if(empty($wechatID)) {
+                echo __('用户微信号不能为空', 'jms-customer-manager');
             } else {
                 $allowToAdd = true;
 
@@ -51,7 +51,18 @@
 
                 if($allowToAdd) {
                     $currentDate = current_time('mysql', 0); //show local time
-                    $result = $this->model->addCustomer($name, $wechatID, $desc, $childInfo, $interest, $sellTier, $currentDate);
+                    $isUnique = false;
+                    $sign = NULL;
+                    while(!$isUnique) {
+                        $sign = $this->mt_rand_str(16) . $wechatID . $this->mt_rand_str(16);
+                        $sign = sha1($sign);
+                        $result = $this->model->getCustomerBySign($sign);
+                        if(count($result) == 0) {
+                            $isUnique = true;
+                        }
+                    }
+
+                    $result = $this->model->addCustomer($name, $wechatID, $desc, $childInfo, $interest, $sellTier, $currentDate, $sign);
                     if($result !== false) {
                         // update avator
                         // $lastid = $wpdb->insert_id;
@@ -163,6 +174,49 @@
                 }
             }
             echo wp_json_encode($result);
+        }
+
+        function registerInfo() {
+            $currentDate = current_time('mysql', 0); //show local time
+            $sign = trim($_REQUEST['wid']);
+            $result = $this->model->getCustomerBySign($sign);
+
+            if(count($result) > 0) {
+                $openid = trim($_REQUEST['openid']);
+                $parentName = trim($_REQUEST['pname']);
+                $parentGender = trim($_REQUEST['pgender']);
+                $parentAge = trim($_REQUEST['page']);
+                $phone = trim($_REQUEST['phone']);
+    
+                $childName = trim($_REQUEST['cname']);
+                $childGender = trim($_REQUEST['cgender']);
+                $childAge = trim($_REQUEST['cage']);
+                $childInfo = "{children:[{name:\"$childName\", age:$childAge, gender:$childGender}]}";
+                $sellTier = 1; # registered user, but not paid
+
+                $result = $this->model->updateCustomer(
+                    $result[0]["id"],
+                    $parentName,
+                    $wechatID,
+                    $result[0]["desc"],
+                    $childInfo,
+                    $result[0]["interest"],
+                    $sellTier,
+                    $currentDate,
+                    $parentAge,
+                    $parentGender,
+                    $openid,
+                    $phone
+                );
+
+                if($result !== false) {
+                    echo "{code: 1}";
+                } else {
+                    echo "{code: -1, msg:\"更新用户信息失败\"}";
+                }
+            } else {
+                echo "{code: -1, msg:\"invalid wechat\"}";
+            }
         }
     }
 ?>

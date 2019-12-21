@@ -38,9 +38,13 @@ add_action( 'admin_menu', 'jmsCustomerAdminPage' );
 add_action('wp_ajax_jms_customer', 'jms_customer_ajax');
 add_action('wp_ajax_nopriv_jms_customer', 'jms_customer_ajax');
 
+add_action('wp_ajax_jms_customer_register', 'jms_customer_register_ajax');
+add_action('wp_ajax_nopriv_jms_customer_register', 'jms_customer_register_ajax');
+
 
 /**
  * Init database, current version 1.0
+ * tier: 0 for add friend; 1 for registered; 2 for paid;
  */
 function installJMSCustomerManager() {
     global $jms_customer_manager_version;
@@ -58,6 +62,7 @@ function installJMSCustomerManager() {
                 `open_id` VARCHAR(255) NULL,
                 `name` VARCHAR(255) NULL,
                 `age` INT UNSIGNED NULL,
+                `gender` TINYINT UNSIGNED NULL,
                 `desc` TEXT NULL,
                 `phone` VARCHAR(255) NULL,
                 `child_info` TEXT NULL COMMENT 'json objects\n',
@@ -67,6 +72,7 @@ function installJMSCustomerManager() {
                 `tier` INT NULL,
                 `create_date` DATETIME NULL,
                 `update_date` DATETIME NULL,
+                `sign` VARCHAR(255) NULL,
                 PRIMARY KEY (`id`),
                 UNIQUE INDEX `id_UNIQUE` (`id` ASC))
                 ENGINE = InnoDB ".$charset_collate.";";
@@ -77,6 +83,7 @@ function installJMSCustomerManager() {
         add_option( "jms_customer_manager_version", $jms_customer_manager_version );
     }
 }
+
 
 function jmsCustomerAdminPage() {
     add_menu_page(
@@ -171,6 +178,14 @@ function jmsCustomerAdminPageOptions() {
         }
 
         $customerController->showCustomerList($searchTerm, $paged);
+    }
+}
+
+function jms_customer_register_ajax($wp) {
+    if($_REQUEST["task"] == "register") {
+        require_once(dirname(__FILE__)."/controllers/JMSCustomerController.php");
+        $controller = new JMSCustomerController();
+        $controller->registerInfo();
     }
 }
 
