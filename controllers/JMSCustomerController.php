@@ -82,12 +82,33 @@
             }
         }
 
-        function updateCustomer($id, $name, $wechatID, $desc, $childInfo, $interest, $sellTier) {
+        function updateCustomer($id, $name, $wechatID, $desc, $childInfo, $interest, $sellTier, $age=NULL, $gender=NULL, $open_id=NULL, $phone=NULL) {
             $currentDate = current_time('mysql', 0); //show local time
-            $result = $this->model->updateCustomer($id, $name, $wechatID, $desc, $childInfo, $interest, $sellTier, $currentDate);
-            if($result !== false) {
-                $message = sprintf(__('客户更新成功! <a href="%s">返回客户列表</a>', 'jms-customer-manager'), $wp->request."admin.php?page=jms-customer-manager-top");
-                echo "<h1>".$message."</h1>";
+            $result = $this->model->getCustomerByID($id);
+            if(count($result) > 0) {
+                if($age == NULL) {
+                    $age = $result[0]["age"];
+                }
+
+                if($gender == NULL) {
+                    $gender = $result[0]["gender"];
+                }
+
+                if($open_id == NULL) {
+                    $open_id = $result[0]["open_id"];
+                }
+
+                if($phone == NULL) {
+                    $phone = $result[0]["phone"];
+                }
+
+                $result = $this->model->updateCustomer($id, $name, $wechatID, $desc, $childInfo, $interest, $sellTier, $currentDate, $age, $gender, $open_id, $phone);
+                if($result !== false) {
+                    $message = sprintf(__('客户更新成功! <a href="%s">返回客户列表</a>', 'jms-customer-manager'), $wp->request."admin.php?page=jms-customer-manager-top");
+                    echo "<h1>".$message."</h1>";
+                } else {
+                    echo __('客户更新失败, 数据库操作失败!', 'jms-customer-manager');
+                }
             } else {
                 echo __('客户更新失败, 数据库操作失败!', 'jms-customer-manager');
             }
@@ -183,10 +204,10 @@
 
             if(count($result) > 0) {
                 $openid = trim($_REQUEST['openid']);
-                $parentName = trim($_REQUEST['pname']);
+                // $parentName = trim($_REQUEST['pname']);
                 $parentGender = trim($_REQUEST['pgender']);
-                $parentAge = trim($_REQUEST['page']);
-                $phone = trim($_REQUEST['phone']);
+                // $parentAge = trim($_REQUEST['page']);
+                // $phone = trim($_REQUEST['phone']);
     
                 $childName = trim($_REQUEST['cname']);
                 $childGender = trim($_REQUEST['cgender']);
@@ -196,17 +217,17 @@
 
                 $result = $this->model->updateCustomer(
                     $result[0]["id"],
-                    $parentName,
-                    $wechatID,
+                    $result[0]["name"],
+                    $result[0]["wechat_id"],
                     $result[0]["desc"],
                     $childInfo,
                     $result[0]["interest"],
                     $sellTier,
                     $currentDate,
-                    $parentAge,
+                    $result[0]["age"],
                     $parentGender,
                     $openid,
-                    $phone
+                    $result[0]["phone"]
                 );
 
                 if($result !== false) {

@@ -155,7 +155,7 @@ echo $currentURL;
             
             <td class="categories column-categories">
                 <?php
-                    echo $data["child_info"];
+                    echo stripslashes($data["child_info"]);
                 ?>
             </td>
             
