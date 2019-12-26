@@ -1,21 +1,13 @@
 <?php
     global $wp;
-    $currentURL = $wp->request."admin.php?page=jms-customer-manager-top";
-    $purchaseURL = $wp->request."admin.php?page=jms-customer-manager-purchase";
+    $currentURL = $wp->request."admin.php?page=jms-customer-manager-purchase";
 ?>
 
 <div class="wrap">
 <h1>
 <?php
-    echo __('客户管理','jms-customer-manager');
-?> <a href="
-<?php
-echo $currentURL;
-?>&action=new" class="page-title-action">
-<?php
-    echo __('添加客户','jms-customer-manager');
-?>
-</a></h1>
+    echo __('客户购买记录','jms-customer-manager');
+?></h1>
 
 
 <form id="jms-patient-profile-filter" method="get" action="<?php echo $currentURL?>">
@@ -26,11 +18,11 @@ echo $currentURL;
 	<input type="submit" id="search-submit" class="button" value="搜索">
 </p>
 
-<input type="hidden" id="page" name="page" value="jms-customer-manager-top">
+<input type="hidden" id="page" name="page" value="jms-customer-manager-purchase">
 
 <div class="tablenav top">
     <div class="tablenav-pages">
-        <span class="displaying-num"><?php echo $numberOfVideo."个客户"?></span>
+        <span class="displaying-num"><?php echo $numberOfVideo."个客户购买记录"?></span>
         <span class="pagination-links">
         <?php
             if($paged == 1) {
@@ -75,7 +67,7 @@ echo $currentURL;
 
 
 
-<h2 class="screen-reader-text">客户列表</h2>
+<h2 class="screen-reader-text">购买记录列表</h2>
 
 <table class="wp-list-table widefat fixed striped posts">
 	<thead>
@@ -90,26 +82,20 @@ echo $currentURL;
         <th scope="col" id="title" class="manage-column column-categories">
             <?php echo __('微信号','jms-customer-manager');?>
         </th>
-        <th scope="col" id="author" class="manage-column column-categories" >
+        <th scope="col" id="author" class="manage-column column-categories">
             <?php echo __('昵称','jms-customer-manager');?>
         </th>
-        <th scope="col" id="author" class="manage-column column-author">
-            <?php echo __('销售等级','jms-customer-manager');?>
+        <th scope="col" id="author" class="manage-column column-categories">
+            <?php echo __('金额','jms-customer-manager');?>
         </th>
         <th scope="col" id="categories" class="manage-column column-categories">
-            <?php echo __('子女信息','jms-customer-manager');?>
+            <?php echo __('付款时间','jms-customer-manager');?>
         </th>
         <th scope="col" id="categories" class="manage-column column-categories">
-            <?php echo __('喜好','jms-customer-manager');?>
+            <?php echo __('过期时间','jms-customer-manager');?>
         </th>
         <th scope="col" id="categories" class="manage-column column-categories">
             <?php echo __('描述','jms-customer-manager');?>
-        </th>
-        <th scope="col" id="categories" class="manage-column column-categories">
-            <?php echo __('更新时间','jms-customer-manager');?>
-        </th>
-        <th scope="col" id="categories" class="manage-column column-categories">
-            <?php echo __('操作','jms-customer-manager');?>
         </th>
     </tr>
 	</thead>
@@ -127,9 +113,7 @@ echo $currentURL;
             </th>
             <td class="title column-title has-row-actions column-primary page-title">
                 <strong>
-                    <a class="row-title" href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-top&id=<?php echo $data["id"];?>&action=edit">
-                        <?php echo $data["id"]; ?>
-                    </a>
+                    <?php echo $data["id"]; ?>
                 </strong>
             </td>
             
@@ -139,10 +123,10 @@ echo $currentURL;
                 ?>
                 
                 <div class="row-actions">
-                    <span class="edit"><a href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-top&id=<?php echo $data["id"];?>&action=edit">
-                    <?php echo __('编辑','jms-customer-manager'); ?>
+                    <span class="edit"><a href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-purchase&id=<?php echo $data["id"];?>&name=<?php echo $data["name"]; ?>&action=edit">
+                    <?php echo __('Edit','jms-customer-manager'); ?>
                     </a> | </span>
-                    <span class="trash"><a href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-top&id=<?php echo $data["id"];?>&action=delete&_wpnonce=<?php echo wp_create_nonce( 'delete-customer-'.$data["id"] );?>" class="submitdelete">删除</a> | </span>
+                    <span class="trash"><a href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-purchase&id=<?php echo $data["id"];?>&action=delete&_wpnonce=<?php echo wp_create_nonce( 'delete-purchase-'.$data["id"] );?>" class="submitdelete">移至回收站</a> | </span>
                 </div>
             </td>
             
@@ -154,37 +138,25 @@ echo $currentURL;
             
             <td class="categories column-categories">
                 <?php
-                    echo $data["tier"];
-                ?>
-            </td>
-            
-            <td class="categories column-categories">
-                <?php
-                    echo stripslashes($data["child_info"]);
-                ?>
-            </td>
-            
-            <td class="categories column-categories">
-                <?php
-                    echo $data["interest"];
-                ?>
-            </td>
-            
-            <td class="categories column-categories">
-                <?php
-                    echo $data["desc"];
+                    echo $data["amount"];
                 ?>
             </td>
             
             <td class="date column-date" data-colname="日期">
-                <abbr title="<?php echo $data["update_date"]; ?>">
-                    <?php echo $data["update_date"]; ?>
+                <abbr title="<?php echo $data["paid_date"]; ?>">
+                    <?php echo $data["paid_date"]; ?>
+                </abbr>
+            </td>
+            
+            <td class="date column-date" data-colname="日期">
+                <abbr title="<?php echo $data["expired_date"]; ?>">
+                    <?php echo $data["expired_date"]; ?>
                 </abbr>
             </td>
             
             <td class="categories column-categories">
                 <?php
-                    echo "<a href=\"".$purchaseURL."&action=new&uid=".$data["id"]."&name=".$data["name"]."\">添加购买记录</a>";
+                    echo $data["note"];
                 ?>
             </td>
         </tr>

@@ -49,10 +49,10 @@ add_action('wp_ajax_nopriv_jms_customer_register', 'jms_customer_register_ajax')
 function installJMSCustomerManager() {
     global $jms_customer_manager_version;
     global $wpdb;
-    
+    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
-    $jms_customer_manager_version = get_option( "jms_customer_manager_version", null );
-    if ( $jms_customer_manager_version == null ) {
+    $dbVersion = get_option( "jms_customer_manager_version", null );
+    if ( $dbVersion == null ) {
         $charset_collate = $wpdb->get_charset_collate();
         
         $table_name = $wpdb->prefix . "jms_customer";
@@ -76,11 +76,38 @@ function installJMSCustomerManager() {
                 PRIMARY KEY (`id`),
                 UNIQUE INDEX `id_UNIQUE` (`id` ASC))
                 ENGINE = InnoDB ".$charset_collate.";";
-
-        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         dbDelta( $sql );
-        
-        add_option( "jms_customer_manager_version", $jms_customer_manager_version );
+
+        $dbVersion = "1.0";
+        add_option( "jms_customer_manager_version", $dbVersion );
+    }
+
+    if($dbVersion == "1.0") {
+        $table_name = $wpdb->prefix . "jms_customer";
+        $sql = "ALTER TABLE `$table_name` 
+        CHANGE COLUMN `desc` `desc` MEDIUMTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_520_ci' NULL DEFAULT NULL";
+        $wpdb->query( $sql );
+
+        $table_name = $wpdb->prefix . "jms_customer_purchase";
+        $sql = "CREATE TABLE IF NOT EXISTS `".$table_name."` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `amount` FLOAT(6,2) UNSIGNED NULL,
+                `paid_date` DATETIME NULL,
+                `expired_date` DATETIME NULL,
+                `duration` INT UNSIGNED NULL,
+                `uid` INT UNSIGNED NULL,
+                `note` TEXT(65536) NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE INDEX `id_UNIQUE` (`id` ASC))
+                ENGINE = InnoDB ".$charset_collate.";";
+        dbDelta( $sql );
+
+        $sql = "ALTER TABLE `$table_name` 
+        CHANGE COLUMN `note` `note` MEDIUMTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_520_ci' NULL DEFAULT NULL";
+        $wpdb->query( $sql );
+
+        $dbVersion = "1.1";   
+        update_option( "jms_link_db_version", $dbVersion );
     }
 }
 
@@ -92,10 +119,17 @@ function jmsCustomerAdminPage() {
         'manage_options',
         'jms-customer-manager-top',
         'jmsCustomerAdminPageOptions' );
+
+    add_submenu_page(
+        'jms-customer-manager-top',
+        __("消费记录", 'jms-customer-manager' ),
+        __("消费记录", 'jms-customer-manager' ),
+        'manage_options',
+        'jms-customer-manager-purchase',
+        'jmsCustomerPurchasePage');
 }
 
 function jmsCustomerAdminPageOptions() {
-    global $wpdb, $wp;
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
@@ -146,7 +180,7 @@ function jmsCustomerAdminPageOptions() {
                 $customerController = new JMSCustomerController();
                 $customerController->showEditForm($customerID);
             } else {
-                echo __('未找到制定的视频。', 'jms-customer-manager');
+                echo __('未找到制定的记录。', 'jms-customer-manager');
             }
         } else if($_GET[ "action" ] == 'delete') {
             if(isset($_GET["id"])) {
@@ -159,7 +193,7 @@ function jmsCustomerAdminPageOptions() {
                     echo __('页面安全密钥已过期，无法删除指定视频。', 'jms-customer-manager');
                 }
             } else {
-                echo __('未找到制定的视频。', 'jms-customer-manager');
+                echo __('未找到制定的记录。', 'jms-customer-manager');
             }
         }
     } else {
@@ -178,6 +212,89 @@ function jmsCustomerAdminPageOptions() {
         }
 
         $customerController->showCustomerList($searchTerm, $paged);
+    }
+}
+
+function jmsCustomerPurchasePage() {
+	if ( !current_user_can( 'manage_options' ) )  {
+		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	}
+    
+    if( isset($_POST["action"]) ) {
+        if($_POST[ "action" ] == "new-save") {
+            if(check_admin_referer( 'new_purchase' )) {
+                require_once(dirname(__FILE__)."/controllers/JMSPurchaseController.php");
+                $purchaseController = new JMSPurchaseController();
+                $uid = trim($_POST[ "uid" ]);
+                $amount = trim($_POST[ "amount" ]);
+                $duration = trim($_POST[ "duration" ]);
+                $note = trim($_POST[ "note" ]);
+                $purchaseController->addPurchase($uid, $amount, $duration, $note);
+            } else {
+                echo __( '页面安全密钥已过期，请重新打开添加页面提交视频。' );
+            }
+        } else if($_POST[ "action" ] == "update-save") {
+            if(check_admin_referer( 'update_purchase' )) {
+                require_once(dirname(__FILE__)."/controllers/JMSPurchaseController.php");
+                $purchaseController = new JMSPurchaseController();
+
+                $id = trim($_POST[ "id" ]);
+                $amount = trim($_POST[ "amount" ]);
+                $paidDate = trim($_POST[ "paid-date" ]);
+                $duration = trim($_POST[ "duration" ]);
+                $note = trim($_POST[ "note" ]);
+                $purchaseController->updatePurchase($id, $amount, $duration, $note, $paidDate);
+            } else {
+                echo __( '页面安全密钥已过期，请重新打开编辑页面提交视频。' );
+            }
+        }
+    } else if( isset($_GET[ "action" ]) ) {
+        if($_GET[ "action" ] == 'new') {
+            require_once(dirname(__FILE__)."/controllers/JMSPurchaseController.php");
+            $purchaseController = new JMSPurchaseController();
+            $uid = $_GET[ "uid" ];
+            $name = $_GET[ "name" ];
+            $purchaseController->showAddForm($uid, $name);
+        } else if($_GET[ "action" ] == 'edit') {
+            if(isset($_GET["id"])) {
+                $purchaseID = trim($_GET["id"]);
+                $name = $_GET[ "name" ];
+                require_once(dirname(__FILE__)."/controllers/JMSPurchaseController.php");
+                $purchaseController = new JMSPurchaseController();
+                $purchaseController->showEditForm($purchaseID, $name);
+            } else {
+                echo __('未找到制定的记录。', 'jms-customer-manager');
+            }
+        } else if($_GET[ "action" ] == 'delete') {
+            if(isset($_GET["id"])) {
+                $purchaseID = trim($_GET["id"]);
+                if(isset($_GET["_wpnonce"]) && wp_verify_nonce( trim($_GET["_wpnonce"]), 'delete-purchase-'.$purchaseID )) {
+                    require_once(dirname(__FILE__)."/controllers/JMSPurchaseController.php");
+                    $purchaseController = new JMSPurchaseController();
+                    $purchaseController->deletePurchase($purchaseID);
+                } else {
+                    echo __('页面安全密钥已过期，无法删除指定视频。', 'jms-customer-manager');
+                }
+            } else {
+                echo __('未找到制定的记录。', 'jms-customer-manager');
+            }
+        }
+    } else {
+        //show list
+        require_once(dirname(__FILE__)."/controllers/JMSPurchaseController.php");
+        $customerController = new JMSPurchaseController();
+
+        $searchTerm = "";
+        if( isset($_GET[ "s" ]) ) {
+            $searchTerm = trim($_GET["s"]);
+        }
+
+        $paged = 1;
+        if( isset($_GET[ "paged" ]) ) {
+            $paged = (int)trim($_GET["paged"]);
+        }
+
+        $customerController->showPurchaseList($searchTerm, $paged);
     }
 }
 
