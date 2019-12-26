@@ -220,7 +220,7 @@
                 $childName = trim($_REQUEST['cname']);
                 $childGender = trim($_REQUEST['cgender']);
                 $childAge = trim($_REQUEST['cage']);
-                $childInfo = "{children:[{name:\"$childName\", age:$childAge, gender:$childGender}]}";
+                $childInfo = "{\"children\":[{\"name\":\"$childName\", \"age\":$childAge, \"gender\":$childGender}]}";
                 $sellTier = 1; # registered user, but not paid
 
                 $result = $this->model->updateCustomer(
