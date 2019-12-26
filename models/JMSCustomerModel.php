@@ -140,5 +140,12 @@
                 return $wpdb->get_results("SELECT id, title, description, update_date, vid, thumb FROM $table_name WHERE published=1 AND `title` LIKE '%".$query."%' ORDER BY id DESC LIMIT $start, $count", ARRAY_A);
             }
         }
+
+        function getUserByTier($tier) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . $this->tableName;
+            $wpdb->show_errors( true );
+            return $wpdb->get_results("SELECT id, wechat_id, child_info, `sign`,  gender FROM $table_name WHERE tier=".(int)$tier." ORDER BY id DESC", ARRAY_A);
+        }
     }
 ?>

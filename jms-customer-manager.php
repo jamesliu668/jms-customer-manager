@@ -311,6 +311,10 @@ function jms_customer_ajax($wp) {
         require_once(dirname(__FILE__)."/controllers/JMSCustomerController.php");
         $controller = new JMSCustomerController();
         $controller->search();
+    } elseif($_REQUEST["task"] == "search-new") {
+        require_once(dirname(__FILE__)."/controllers/JMSCustomerController.php");
+        $controller = new JMSCustomerController();
+        $controller->searchNew();
     }
 }
 ?>

@@ -197,6 +197,14 @@
             echo wp_json_encode($result);
         }
 
+        function searchNew() {
+            $result = $this->model->getUserByTier(0);
+            if(count($result) > 0) {
+                
+            }
+            echo wp_json_encode($result);
+        }
+
         function registerInfo() {
             $currentDate = current_time('mysql', 0); //show local time
             $sign = trim($_REQUEST['wid']);
