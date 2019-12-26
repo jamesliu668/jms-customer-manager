@@ -6,11 +6,12 @@
         function numberOfPurchase($searchTerm) {
             global $wpdb;
             $table_name = $wpdb->prefix . $this->tableName;
+            $userTableName = $wpdb->prefix . $this->userTableName;
             $wpdb->show_errors( true );
 
-            $sql = "SELECT count(*) AS total FROM $table_name";
+            $sql = "SELECT count(*) AS total FROM $table_name as a LEFT JOIN $userTableName as b ON a.uid = b.id";
             if($searchTerm != "") {
-                $sql = "SELECT count(*) AS total FROM $table_name WHERE `wechat_id` LIKE '%".$searchTerm."%' or `name` LIKE '%".$searchTerm."%'";
+                $sql = "SELECT count(*) AS total FROM $table_name as a LEFT JOIN $userTableName as b ON a.uid = b.id WHERE `name` LIKE '%".$searchTerm."%' or `wechat_id` LIKE '%".$searchTerm."%'";
             }
             $totalNumber = $wpdb->get_results($sql, OBJECT);
             return $totalNumber[0]->total;
