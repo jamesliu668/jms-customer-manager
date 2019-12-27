@@ -23,7 +23,7 @@
             $startIndex = ($paged - 1) * $numberOfRecord;
             $sql = "SELECT * FROM $table_name ORDER BY `id` ASC LIMIT $startIndex, $numberOfRecord";
             if($searchTerm != "") {
-                $sql = "SELECT * FROM $table_name WHERE `title` LIKE '%".$searchTerm."%' or `name` LIKE '%".$searchTerm."%' ORDER BY `id` ASC LIMIT $startIndex,$numberOfRecord";
+                $sql = "SELECT * FROM $table_name WHERE `wechat_id` LIKE '%".$searchTerm."%' or `name` LIKE '%".$searchTerm."%' ORDER BY `id` ASC LIMIT $startIndex,$numberOfRecord";
             }
             $result = $wpdb->get_results($sql, ARRAY_A);
             return $result;
@@ -134,18 +134,29 @@
                 $start = 0;
             }
 
+            $sql = "";
             if(empty($query)) {
-                return $wpdb->get_results("SELECT id, title, description, update_date, vid, thumb FROM $table_name WHERE published=1 ORDER BY id DESC LIMIT $start, $count", ARRAY_A);
+                $sql = $wpdb->prepare(
+                    "SELECT * FROM $table_name ORDER BY `id` ASC LIMIT %d, %d",
+                    array($start, $count)
+                );
             } else {
-                return $wpdb->get_results("SELECT id, title, description, update_date, vid, thumb FROM $table_name WHERE published=1 AND `title` LIKE '%".$query."%' ORDER BY id DESC LIMIT $start, $count", ARRAY_A);
+                $sql = $wpdb->prepare(
+                    "SELECT * FROM $table_name WHERE `wechat_id` LIKE '%%\"%s\"%%' or `name` LIKE '%%\"%s\"%%' ORDER BY `id` ASC LIMIT %d, %d",
+                    array($query, $query, $start, $count)
+                );
             }
+
+            // echo $sql;
+
+            return $wpdb->get_results($sql, ARRAY_A); 
         }
 
         function getUserByTier($tier) {
             global $wpdb;
             $table_name = $wpdb->prefix . $this->tableName;
             $wpdb->show_errors( true );
-            return $wpdb->get_results("SELECT id, wechat_id, child_info, `sign`,  gender FROM $table_name WHERE tier=".(int)$tier." ORDER BY id DESC", ARRAY_A);
+            return $wpdb->get_results("SELECT * FROM $table_name WHERE tier=".(int)$tier, ARRAY_A);
         }
     }
 ?>

@@ -320,10 +320,10 @@ function jms_customer_ajax($wp) {
         require_once(dirname(__FILE__)."/controllers/JMSCustomerController.php");
         $controller = new JMSCustomerController();
         $controller->search();
-    } elseif($_REQUEST["task"] == "search-new") {
+    } elseif($_REQUEST["task"] == "search-by-tier") {
         require_once(dirname(__FILE__)."/controllers/JMSCustomerController.php");
         $controller = new JMSCustomerController();
-        $controller->searchNew();
+        $controller->searchUserByTier();
     }
 }
 ?>
