@@ -36,6 +36,15 @@
                 require_once(dirname(__FILE__)."/../templates/customer_edit.php");
             }
         }
+
+        function showDetails($customerID) {
+            if(empty($customerID)) {
+                echo __('未找到指定的客户', 'jms-customer-manager');
+            } else {
+                $result = $this->model->getCustomerByID($customerID);
+                require_once(dirname(__FILE__)."/../templates/customer_details.php");
+            }
+        }
         
         function addCustomer($name, $wechatID, $desc, $childInfo, $interest, $sellTier) {
             global $wpdb;

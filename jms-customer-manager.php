@@ -182,6 +182,15 @@ function jmsCustomerAdminPageOptions() {
             } else {
                 echo __('未找到制定的记录。', 'jms-customer-manager');
             }
+        } else if($_GET[ "action" ] == 'details') {
+            if(isset($_GET["id"])) {
+                $customerID = trim($_GET["id"]);
+                require_once(dirname(__FILE__)."/controllers/JMSCustomerController.php");
+                $customerController = new JMSCustomerController();
+                $customerController->showDetails($customerID);
+            } else {
+                echo __('未找到制定的记录。', 'jms-customer-manager');
+            }
         } else if($_GET[ "action" ] == 'delete') {
             if(isset($_GET["id"])) {
                 $customerID = trim($_GET["id"]);

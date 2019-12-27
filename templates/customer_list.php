@@ -126,17 +126,15 @@ echo $currentURL;
                 <div class="locked-indicator"></div>
             </th>
             <td class="title column-title has-row-actions column-primary page-title">
-                <strong>
-                    <a class="row-title" href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-top&id=<?php echo $data["id"];?>&action=edit">
-                        <?php echo $data["id"]; ?>
-                    </a>
-                </strong>
+                <?php echo $data["id"]; ?>
             </td>
             
             <td class="categories column-categories">
-                <?php
-                    echo $data["wechat_id"];
-                ?>
+                <strong>
+                    <a class="row-title" href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-top&id=<?php echo $data["id"];?>&action=details">
+                    <?php echo $data["wechat_id"]; ?>
+                    </a>
+                </strong>
                 
                 <div class="row-actions">
                     <span class="edit"><a href="<?php echo $wp->request; ?>admin.php?page=jms-customer-manager-top&id=<?php echo $data["id"];?>&action=edit">
